@@ -106,7 +106,6 @@ Automated builds of the image are available on [Dockerhub](https://hub.docker.co
 
 ```bash
 docker pull creative/gitlab-ee:8.8.5
-docker pull sameersbn/gitlab:8.8.5
 ```
 
 You can also pull the `latest` tag which is built from the repository *HEAD*
@@ -1056,7 +1055,7 @@ Copy all the **bare** git repositories to the `repositories/` directory of the [
 
 ```bash
 docker run --name gitlab -it --rm [OPTIONS] \
-    sameersbn/gitlab:8.8.5 app:rake gitlab:import:repos
+    creative/gitlab-ee:8.8.5 app:rake gitlab:import:repos
 ```
 
 Watch the logs and your repositories should be available into your new gitlab container.
@@ -1077,7 +1076,7 @@ To upgrade to newer gitlab releases, simply follow this 4 step upgrade procedure
 
 > **Note**
 >
-> Upgrading to `sameersbn/gitlab:8.8.5` from `sameersbn/gitlab:7.x.x` can cause issues. It is therefore required that you first upgrade to `sameersbn/gitlab:8.0.5-1` before upgrading to `sameersbn/gitlab:8.1.0` or higher.
+> Upgrading to `creative/gitlab-ee:8.8.5` from `creative/gitlab-ee:7.x.x` can cause issues. It is therefore required that you first upgrade to `creative/gitlab-ee:8.0.5-1` before upgrading to `creative/gitlab-ee:8.1.0` or higher.
 
 - **Step 1**: Update the docker image.
 

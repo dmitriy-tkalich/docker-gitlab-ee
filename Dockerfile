@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-FROM sameersbn/ubuntu:14.04.20160121
+FROM sameersbn/ubuntu:14.04.20160608
 
 ENV GITLAB_VERSION=8.8.5-ee \
     GITLAB_SHELL_VERSION=2.7.2 \
