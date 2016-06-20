@@ -1,8 +1,10 @@
+<<<<<<< HEAD
 FROM sameersbn/ubuntu:14.04.20160121
 
-ENV GITLAB_VERSION=8.4.1-ee \
-    GITLAB_SHELL_VERSION=2.6.10 \
-    GITLAB_WORKHORSE_VERSION=0.6.1 \
+ENV GITLAB_VERSION=8.8.5-ee \
+    GITLAB_SHELL_VERSION=2.7.2 \
+    GITLAB_WORKHORSE_VERSION=0.7.1 \
+    GOLANG_VERSION=1.5.3 \
     GITLAB_USER="git" \
     GITLAB_HOME="/home/git" \
     GITLAB_LOG_DIR="/var/log/gitlab" \
@@ -33,7 +35,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv E1DD270288B4E60
       libxml2 libxslt1.1 libcurl3 libicu52 \
  && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX \
  && locale-gen en_US.UTF-8 \
- && dpkg-reconfigure locales \
+ && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales \
  && gem install --no-document bundler \
  && rm -rf /var/lib/apt/lists/*
 
