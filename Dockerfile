@@ -1,7 +1,7 @@
 FROM sameersbn/ubuntu:14.04.20160608
 
-ENV GITLAB_VERSION=8.8.5-ee \
-    GITLAB_SHELL_VERSION=2.7.2 \
+ENV GITLAB_VERSION=8.9.0-ee \
+    GITLAB_SHELL_VERSION=3.0.0 \
     GITLAB_WORKHORSE_VERSION=0.7.1 \
     GOLANG_VERSION=1.5.3 \
     GITLAB_USER="git" \
@@ -40,6 +40,10 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv E1DD270288B4E60
 
 COPY assets/build/ ${GITLAB_BUILD_DIR}/
 RUN bash ${GITLAB_BUILD_DIR}/install.sh
+
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y sendmail \
+ && rm -rf /var/lib/apt/lists/*
 
 COPY assets/runtime/ ${GITLAB_RUNTIME_DIR}/
 COPY entrypoint.sh /sbin/entrypoint.sh
