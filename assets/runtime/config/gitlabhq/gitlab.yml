@@ -30,8 +30,8 @@ production: &base
   gitlab:
     ## Web server settings (note: host is the FQDN, do not include http://)
     host: {{GITLAB_HOST}}
-    port: {{GITLAB_PORT}}
-    https: {{GITLAB_HTTPS}}
+    port: {{GITLAB_PORT}} # Set to 443 if using HTTPS, see installation.md#using-https for additional HTTPS configuration details
+    https: {{GITLAB_HTTPS}} # Set to true if using HTTPS, see installation.md#using-https for additional HTTPS configuration details
 
     # Uncommment this line below if your ssh host is different from HTTP/HTTPS one
     # (you'd obviously need to replace ssh.host_example.com with your own host).
@@ -71,7 +71,7 @@ production: &base
     # Email server smtp settings are in config/initializers/smtp_settings.rb.sample
 
     default_projects_limit: {{GITLAB_PROJECTS_LIMIT}}
-    default_can_create_group: {{GITLAB_CREATE_GROUP}}     # default: true
+    default_can_create_group: {{GITLAB_CREATE_GROUP}}  # default: true
     username_changing_enabled: {{GITLAB_USERNAME_CHANGE}} # default: true - User can change her username/namespace
     ## Default theme ID
     ##   1 - Graphite
@@ -99,7 +99,7 @@ production: &base
       wiki: {{GITLAB_PROJECTS_WIKI}}
       snippets: {{GITLAB_PROJECTS_SNIPPETS}}
       builds: {{GITLAB_PROJECTS_BUILDS}}
-      container_registry: true
+      container_registry: {{GITLAB_PROJECTS_CONTAINER_REGISTRY}}
 
     ## Webhook settings
     # Number of seconds to wait for HTTP response after sending webhook HTTP POST request (default: 10)
@@ -107,7 +107,7 @@ production: &base
 
     ## Repository downloads directory
     # When a user clicks e.g. 'Download zip' on a project, a temporary zip file is created in the following directory.
-    # The default is 'tmp/repositories' relative to the root of the Rails app.
+    # The default is 'shared/cache/archive/' relative to the root of the Rails app.
     repository_downloads_path: {{GITLAB_DOWNLOADS_DIR}}
 
   ## Reply by email
@@ -166,6 +166,9 @@ production: &base
     # Flag stuck CI builds as failed
     stuck_ci_builds_worker:
       cron: "0 0 * * *"
+    # Remove expired build artifacts
+    expire_build_artifacts_worker:
+      cron: "50 * * * *"
     # Periodically run 'git fsck' on all repositories. If started more than
     # once per hour you will have concurrent 'git fsck' jobs.
     repository_check_worker:
@@ -179,13 +182,13 @@ production: &base
       cron: "0 * * * *"
 
   registry:
-    # enabled: true
-    # host: registry.example.com
-    # port: 5005
-    # api_url: http://localhost:5000/ # internal address to the registry, will be used by GitLab to directly communicate with API
-    # key_path: config/registry.key
-    # path: shared/registry
-    # issuer: gitlab-issuer
+    enabled: {{GITLAB_REGISTRY_ENABLED}}
+    host: {{GITLAB_REGISTRY_HOST}}
+    port: {{GITLAB_REGISTRY_PORT}}
+    api_url: {{GITLAB_REGISTRY_API_URL}}    # internal address to the registry, will be used by GitLab to directly communicate with API
+    key: {{GITLAB_REGISTRY_KEY_PATH}}
+    path: {{GITLAB_REGISTRY_DIR}}
+    issuer: {{GITLAB_REGISTRY_ISSUER}}
 
   #
   # 2. GitLab CI settings
@@ -377,7 +380,10 @@ production: &base
           label: 'Google',
           app_id: '{{OAUTH_GOOGLE_API_KEY}}',
           app_secret: '{{OAUTH_GOOGLE_APP_SECRET}}',
-          args: { access_type: 'offline', approval_prompt: '{{OAUTH_GOOGLE_APPROVAL_PROMPT}}', hd: '{{OAUTH_GOOGLE_RESTRICT_DOMAIN}}' } }
+          args: {
+            access_type: 'offline',
+            approval_prompt: '{{OAUTH_GOOGLE_APPROVAL_PROMPT}}',
+            hd: [{{OAUTH_GOOGLE_RESTRICT_DOMAIN}}] } }
       - { name: 'facebook',
           app_id: '{{OAUTH_FACEBOOK_API_KEY}}',
           app_secret: '{{OAUTH_FACEBOOK_APP_SECRET}}' }
@@ -393,7 +399,7 @@ production: &base
                   idp_cert_fingerprint: '{{OAUTH_SAML_IDP_CERT_FINGERPRINT}}',
                   idp_sso_target_url: '{{OAUTH_SAML_IDP_SSO_TARGET_URL}}',
                   issuer: '{{OAUTH_SAML_ISSUER}}',
-                  attribute_statements: { 
+                  attribute_statements: {
                     first_name: ['{{OAUTH_SAML_ATTRIBUTE_STATEMENTS_FIRST_NAME}}'],
                     last_name: ['{{OAUTH_SAML_ATTRIBUTE_STATEMENTS_LAST_NAME}}'],
                     name: ['{{OAUTH_SAML_ATTRIBUTE_STATEMENTS_NAME}}'],
@@ -436,6 +442,13 @@ production: &base
   satellites:
     path: {{GITLAB_DATA_DIR}}/gitlab-satellites/
 
+  ## Repositories settings
+  repositories:
+    # Paths where repositories can be stored. Give the canonicalized absolute pathname.
+    # NOTE: REPOS PATHS MUST NOT CONTAIN ANY SYMLINK!!!
+    storages: # You must have at least a `default` storage path.
+      default: {{GITLAB_REPOS_DIR}}/
+
   ## Backup settings
   backup:
     path: "{{GITLAB_BACKUP_DIR}}"   # Relative paths are relative to Rails.root (default: tmp/backups/)
@@ -461,8 +474,6 @@ production: &base
   gitlab_shell:
     path: {{GITLAB_SHELL_INSTALL_DIR}}/
 
-    # REPOS_PATH MUST NOT BE A SYMLINK!!!
-    repos_path: {{GITLAB_REPOS_DIR}}/
     hooks_path: {{GITLAB_SHELL_INSTALL_DIR}}/hooks/
 
     # File that contains the secret key for verifying access for gitlab-shell.
@@ -536,11 +547,13 @@ test:
     # user: YOUR_USERNAME
   satellites:
     path: tmp/tests/gitlab-satellites/
+  repositories:
+    storages:
+      default: tmp/tests/repositories/
   backup:
     path: tmp/tests/backups
   gitlab_shell:
     path: tmp/tests/gitlab-shell/
-    repos_path: tmp/tests/repositories/
     hooks_path: tmp/tests/gitlab-shell/hooks/
   issues_tracker:
     redmine:
