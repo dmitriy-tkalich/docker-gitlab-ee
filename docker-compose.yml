@@ -11,7 +11,7 @@ services:
 
   postgresql:
     restart: always
-    image: sameersbn/postgresql:9.4-22
+    image: sameersbn/postgresql:9.5
     volumes:
     - /srv/docker/gitlab/postgresql:/var/lib/postgresql:Z
     environment:
@@ -19,6 +19,13 @@ services:
     - DB_PASS=password
     - DB_NAME=gitlabhq_production
     - DB_EXTENSION=pg_trgm
+
+  gitlab:
+    restart: always
+    image: creative/gitlab-ee:8.10.4
+    depends_on:
+    - redis
+    - postgresql
     ports:
     - "10080:80"
     - "10022:22"
